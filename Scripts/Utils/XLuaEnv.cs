@@ -42,6 +42,7 @@ public class XLuaEnv
     {
 
         Debug.Log("创建--LuaEnv");
+
         env = new LuaEnv();
 
         path = InitPath();
