@@ -5,8 +5,12 @@
 ------------------定义----------------------------
 local PlayerController = {}
 
+-- 动画组件
 local animator
+-- 刚体组件
 local rb
+-- Player 状态数据
+local PlayerStatData
 
 -- 允许跳跃标志
 local canJump = false
@@ -33,6 +37,8 @@ PlayerController.Awake = function()
     -- 获取刚体组件
     rb = self:GetComponent(typeof(CS.UnityEngine.Rigidbody))
 
+    -- 获取Player的状态数据
+    PlayerStatData = self:GetComponent(typeof(CS.CharacterStats));
 end
 
 PlayerController.Start = function()

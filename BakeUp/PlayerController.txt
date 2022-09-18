@@ -1,0 +1,90 @@
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.AI;
+using Cinemachine;
+
+
+/// <summary>
+/// 玩家控制类
+/// </summary>
+public class PlayerController : MonoBehaviour
+{
+    private Animator animator;
+
+    public Transform cameraTransfrom;
+
+    private Rigidbody rb;
+
+    private float currentVelocity;
+
+    [Header("Player移动速度")]
+    public float Speed;
+
+    [Header("Player转动速度")]
+    public float smoothTime = 1f;
+
+    [Header("Player起跳力度")]
+    public float jumpGravity = 500f;
+
+    private void Awake()
+    {
+
+        animator = GetComponent<Animator>();
+
+        rb = GetComponent<Rigidbody>();
+    }
+
+    private void Start()
+    {
+        //锁定并隐藏鼠标
+        Cursor.lockState = CursorLockMode.Locked;
+
+
+    }
+
+    private void Update()
+    {
+        PlayerMove();
+
+        if (Input.GetKeyDown(KeyCode.Space))
+            PlayerJump();
+
+        //唤醒光标
+        if (Input.GetKey(KeyCode.LeftAlt))
+        {
+            Cursor.lockState = CursorLockMode.None;
+        }
+
+    }
+
+    private void PlayerMove()
+    {
+
+        Vector2 input = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
+        Vector2 inputDir = input.normalized;
+
+        float targetRotation = Mathf.Atan2(inputDir.x, inputDir.y) * Mathf.Rad2Deg + cameraTransfrom.eulerAngles.y;
+
+        if (inputDir != Vector2.zero)
+        {
+            this.transform.eulerAngles = Vector3.up * Mathf.SmoothDampAngle(transform.eulerAngles.y, targetRotation, ref currentVelocity, smoothTime);
+            rb.MovePosition(transform.position + transform.forward * Time.deltaTime * Speed);
+            this.transform.Translate(transform.forward * Speed * Time.deltaTime, Space.World);
+
+            animator.SetBool("Move", true);
+        }
+        else
+        {
+            animator.SetBool("Move", false);
+        }
+
+    }
+
+    private void PlayerJump()
+    {
+        rb.velocity = new Vector3(rb.velocity.x,jumpGravity*Time.deltaTime,rb.velocity.z);
+        animator.SetTrigger("Jump");
+        
+    }
+}
