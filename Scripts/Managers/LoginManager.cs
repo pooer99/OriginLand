@@ -201,6 +201,8 @@ public class LoginManager : SingleTon<LoginManager>
                     yield return null;
                 }
 
+                yield return new WaitForSeconds(0.2f);
+
                 //播放主场景音乐
                 SoundManager.Instance.isCycle = true;//循环
                 SoundManager.Instance.PlayeMusic(1);

@@ -8,6 +8,9 @@ using UnityEngine;
 /// </summary>
 public class GameManager : SingleTon<GameManager>
 {
+    //游戏是否暂停
+    public bool isPaused;
+
     //Player状态数据
     public CharacterStats playerStats;
 
