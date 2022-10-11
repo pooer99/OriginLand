@@ -9,16 +9,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 60e61d5f88540df4e916082a25673687, type: 3}
-  m_Name: Player_Data
+  m_Script: {fileID: 11500000, guid: 45be960be3a42d245b2ad67b8bceea08, type: 3}
+  m_Name: Enemy_Bear_Attack_Data
   m_EditorClassIdentifier: 
-  health: 360
-  currentHealth: 360
-  defence: 15
-  currentDefence: 15
-  killPoint: 0
-  currentLevel: 1
-  maxLevel: 5
-  baseExp: 50
-  currentExp: 0
-  levelBuff: 0.1
+  minDamage: 20
+  maxDamage: 25
+  attackRange: 9
+  skillRange: 7
+  coolDown: 5
+  skillCoolDown: 15
+  criticalMul: 1.5
+  criticalChance: 0.5

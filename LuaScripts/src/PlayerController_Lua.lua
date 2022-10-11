@@ -12,6 +12,8 @@ local rb
 -- Player 状态数据
 local PlayerStatData
 
+-- 允许移动标志
+local canMove = true
 -- 允许跳跃标志
 local canJump = false
 -- 起跳
@@ -20,6 +22,10 @@ local isJump = false
 local isFall = false
 -- 武器显示标志
 local isShow = false
+-- 死亡
+local isDead = false
+-- 攻击
+local canAttack = true
 
 -- 攻击模式
 local attackMode = {}
@@ -27,6 +33,9 @@ attackMode.Attack1 = 1
 attackMode.Attack2 = 2
 -- 当前攻击方式
 attackMode.nowMode = 1
+-- 攻击缓存时间
+local waitAttackTime = 1.0
+local attacktimer
 
 ----------------生命周期--------------------------
 PlayerController.Awake = function()
@@ -39,11 +48,18 @@ PlayerController.Awake = function()
 
     -- 获取Player的状态数据
     PlayerStatData = self:GetComponent(typeof(CS.CharacterStats));
+
 end
 
 PlayerController.Start = function()
     -- 隐藏光标
     CU.Cursor.lockState = CU.CursorLockMode.Locked
+
+    -- 向GameManager注册Player状态
+    self:RigisterPlayer(PlayerStatData)
+
+    -- 初始化攻击时间
+    attacktimer = waitAttackTime
 end
 
 PlayerController.OnCollisionEnter = function(collision)
@@ -117,57 +133,103 @@ end
 
 -- PlayerAttack函数
 local PlayerAttack = function()
-    -- 切换攻击方式
-    if(attackMode.nowMode == attackMode.Attack1)
+    if(canAttack)
     then
-        animator:SetTrigger("Attack1")
-        attackMode.nowMode = attackMode.nowMode + 1
-    elseif (attackMode.nowMode == attackMode.Attack2)
-    then
-        animator:SetTrigger("Attack2")
-        attackMode.nowMode = 1
-    end
+        -- 不允许再次攻击，等待计时
+        canAttack = false
 
+        -- 锁定敌人
+        if(self:FoundEnemy())
+        then
+            self.transform:LookAt(self.attackTarget.transform)
+        end
+
+        -- 切换攻击方式
+        if(attackMode.nowMode == attackMode.Attack1)
+        then
+            animator:SetTrigger("Attack1")
+            attackMode.nowMode = attackMode.nowMode + 1
+        elseif (attackMode.nowMode == attackMode.Attack2)
+        then
+            animator:SetTrigger("Attack2")
+            attackMode.nowMode = 1
+        end
+    end
+end
+
+-- Animation event
+Hit = function()
+    if(self.attackTarget ~= nil)then
+        local targetStats = self.attackTarget:GetComponent(typeof(CS.CharacterStats))
+        if(targetStats~=nil)then
+            targetStats:TakeDamage(PlayerStatData,targetStats)
+        end
+    end
 end
 
 PlayerController.UpDate = function()
-    --- Player攻击
-    if(Input.GetKeyDown(CU.KeyCode.Mouse0))
-    then
-        PlayerAttack()
-    end
+    if(PlayerStatData.CurrentHealth == 0)then
+        -- Player死亡
+        isDead = true
+        animator:SetBool("Death",isDead);
 
-    --- Player移动
-    PlayerMove()
+        -- 广播给所有敌人
+        self:EndNotify()
+    else
 
-    --- Player跳跃
-    if (Input.GetKeyDown(CU.KeyCode.Space) and canJump == true)
-    then
-        PlayerJump()
-
-        canJump = false
-        animator:SetBool("CanJump",canJump);
-    end
-
-    -- 显示武器
-    if(Input.GetKeyDown(CU.KeyCode.Tab))
-    then
-        if(isShow == false)
+        --- Player攻击
+        if(Input.GetKeyDown(CU.KeyCode.Mouse0))
         then
-            self.weapon.transform:GetChild(0).gameObject:SetActive(true)
-            isShow = true
-        else
-            self.weapon.transform:GetChild(0).gameObject:SetActive(false)
-            isShow = false
+            PlayerAttack()
         end
-    end
 
-    -- 唤醒光标
-    if (Input.GetKey(CU.KeyCode.LeftAlt))
-    then
-        CU.Cursor.lockState = CU.CursorLockMode.None;
-    end
+        -- 攻击计时
+        if(canAttack == false)then
+            attacktimer = attacktimer - CU.Time.deltaTime
+        end
 
+        -- 攻击计时结束，允许攻击
+        if(attacktimer <= 0)then
+            canAttack = true
+
+            -- 重置计时器
+            attacktimer =waitAttackTime
+        end
+
+        --- Player移动
+        if(canMove)then
+            PlayerMove()
+        end
+
+        --- Player跳跃
+        if (Input.GetKeyDown(CU.KeyCode.Space) and canJump == true)
+        then
+            PlayerJump()
+
+            canJump = false
+            animator:SetBool("CanJump",canJump);
+        end
+
+        -- 显示武器
+        if(Input.GetKeyDown(CU.KeyCode.Tab))
+        then
+            if(isShow == false)
+            then
+                self.weapon.transform:GetChild(0).gameObject:SetActive(true)
+                isShow = true
+            else
+                self.weapon.transform:GetChild(0).gameObject:SetActive(false)
+                isShow = false
+            end
+        end
+
+        -- 唤醒光标
+        if (Input.GetKey(CU.KeyCode.LeftAlt))
+        then
+            CU.Cursor.lockState = CU.CursorLockMode.None;
+        end
+
+    end
 end
 
 PlayerController.OnDestroy = function()
