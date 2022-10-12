@@ -77,6 +77,9 @@ public class EnemyController : MonoBehaviour,IEndGameObserver
     [Header("敌人巡逻范围")]
     public float patrolRange;
 
+    //控制每次只会生成一次掉落物
+    private bool canCreateItems=true;
+
     //动画标志
     private bool firstBorn;//第一次登场
     private bool afterBorn;//登场后
@@ -331,7 +334,15 @@ public class EnemyController : MonoBehaviour,IEndGameObserver
                 //关闭agent
                 agent.enabled = false;
 
-                Destroy(this.gameObject,5f);
+                //生成掉落物品
+                if (canCreateItems)
+                {
+                    canCreateItems = false;
+                    UIManager.Instance.InstantiateItems(this.transform);
+                }
+                
+
+                Destroy(this.gameObject,2f);
 
                 break;
         }

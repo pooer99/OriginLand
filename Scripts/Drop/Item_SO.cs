@@ -26,7 +26,13 @@ public class Item_SO : ScriptableObject
     [Header("数量")]
     public int count;
 
+
+    [Header("图标")]
+    public Sprite icon;
+
     [Header("描述")]
     [TextArea]
     public string description;
+
+
 }

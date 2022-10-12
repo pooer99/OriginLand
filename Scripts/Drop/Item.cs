@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 
 /// <summary>
@@ -34,7 +35,16 @@ public class Item : MonoBehaviour
         }
         set
         {
-            itemSO.count = value;
+            itemSO.count = Mathf.Max(0,value);
+        }
+    }
+
+    //图标
+    public Sprite Icon
+    {
+        get
+        {
+            return itemSO.icon;
         }
     }
 
@@ -94,6 +104,7 @@ public class Item : MonoBehaviour
             Debug.Log("捡起：" + ItemType);
             Count++;
 
+            UIManager.Instance.PickUpItems(itemSO);
 
             //销毁
             GameObject.Destroy(gameObject,0.2f);

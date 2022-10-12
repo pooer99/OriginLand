@@ -34,7 +34,7 @@ attackMode.Attack2 = 2
 -- 当前攻击方式
 attackMode.nowMode = 1
 -- 攻击缓存时间
-local waitAttackTime = 1.0
+local waitAttackTime = 1.5
 local attacktimer
 
 ----------------生命周期--------------------------
