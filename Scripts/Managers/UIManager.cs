@@ -27,14 +27,17 @@ public class UIManager : SingleTon<UIManager>
     //背包物品列表,存放物品的SO
     public List<Item_SO> itemsList;
 
+    private Text descriptionText;
+
     //库存面，用于显示物品
     private GameObject inventoryPanel;
 
     //空物品格图标、颜色
-    private Sprite emptyIcon;
-    private Color emptyColor;
+    public Sprite emptyIcon;
+    public Color emptyColor;
 
-
+    //当前选中的Slot位置
+    private int currentSlot = 0;
 
     protected override void Awake()
     {
@@ -52,7 +55,9 @@ public class UIManager : SingleTon<UIManager>
 
     private void LateUpdate()
     {
-        UpdateBackpiack();
+        if(inventoryMenu!=null)
+            UpdateBackpiack();
+
     }
 
     /// <summary>
@@ -97,11 +102,21 @@ public class UIManager : SingleTon<UIManager>
 
             //todo:有bug，捡起物品前必须先打开背包一次
             inventoryPanel = inventoryMenu.transform.GetChild(2).GetChild(0).gameObject;
+
+            //信息栏
+            descriptionText = inventoryMenu.transform.GetChild(2).GetChild(1).GetChild(0).GetChild(1).GetComponent<Text>();
+
+            //初始化背包
+            InitBackpiack();
         }
 
         Time.timeScale = 0.0f;
         GameManager.Instance.isPaused = true;
+
+        //清空信息栏
+        descriptionText.text = "";
     }
+
 
     /// <summary>
     /// 游戏继续类，实现继续后游戏的一些操作
@@ -150,12 +165,26 @@ public class UIManager : SingleTon<UIManager>
     }
 
     /// <summary>
+    /// 初始化背包
+    /// </summary>
+    public void InitBackpiack()
+    {
+        //检测掉落物品预制体中对应的SO中物品的数量
+        for(int i = 0; i < itemPrefabs.Count; i++)
+        {
+            //大于0则在背包中显示
+            if (itemPrefabs[i].GetComponent<Item>().Count > 0)
+            {
+                itemsList.Add(itemPrefabs[i].GetComponent<Item>().itemSO);
+            }
+        }
+    }
+
+    /// <summary>
     /// 用于更新、显示背包物品图标和数量
     /// </summary>
     public void UpdateBackpiack()
     {
-        
-
         GameObject tempSlot;
         Color changeColor = new Color(255, 255, 255, 255);
 
@@ -164,45 +193,43 @@ public class UIManager : SingleTon<UIManager>
         GameObject count;
         GameObject leave;
 
-        for(int i = 0; i < itemsList.Count; i++)
+        for (int i = 0; i < 24; i++)
         {
             //按顺序判断背包列表中的物体数量
-            if (itemsList[i].count > 0)
+            if (itemsList.Count-1 >= i)
             {
                 //获取物品格
                 tempSlot = inventoryPanel.transform.GetChild(i).gameObject;
 
+                changeColor.a = 255;
+
                 //获取图标区
                 itemImage = tempSlot.transform.GetChild(0).gameObject;
-                //获取空图标，方便后续清除图片
-                emptyIcon = itemImage.GetComponent<Image>().sprite;
-                emptyColor = itemImage.GetComponent<Image>().color;
+                
                 //修改物品格图标
                 itemImage.GetComponent<Image>().sprite = itemsList[i].icon;
+                itemImage.GetComponent<Image>().color = changeColor;
 
                 //获取丢弃图标、物品数量区
                 count = tempSlot.transform.GetChild(1).gameObject;
                 leave = tempSlot.transform.GetChild(2).gameObject;
 
                 //修改数量字体和退出图标透明度,显示他们
-                changeColor.a = 255;
                 //修改真实数量
                 count.GetComponent<Text>().text = itemsList[i].count.ToString();
                 count.GetComponent<Text>().color = changeColor;
                 leave.GetComponent<Image>().color = changeColor;
+
             }
             else
             {
-                //物品已用完,移出列表
-                itemsList.Remove(itemsList[i]);
-
                 //获取物品格
                 tempSlot = inventoryPanel.transform.GetChild(i).gameObject;
 
                 //获取图标区
                 itemImage = tempSlot.transform.GetChild(0).gameObject;
 
-                //修改物品格图标
+                //修改物品格图标为空
                 itemImage.GetComponent<Image>().sprite = emptyIcon;
                 itemImage.GetComponent<Image>().color = emptyColor;
 
@@ -216,7 +243,66 @@ public class UIManager : SingleTon<UIManager>
                 changeColor.a = 0;
                 count.GetComponent<Text>().color = changeColor;
                 leave.GetComponent<Image>().color = changeColor;
+
             }
         }
+
     }
+
+    /// <summary>
+    /// 用于获取点击的item的位置
+    /// </summary>
+    /// <param name="pos">点击的Slot的位置</param>
+    public void SelectItem(int pos)
+    {
+        //逻辑上Slot的位置与背包列表的相同
+        currentSlot = pos;
+
+        //显示物品信息
+
+        //点击空格则显示空白信息
+        if (itemsList.Count - 1 >= pos)
+            descriptionText.text = itemsList[pos].description;
+        else
+            descriptionText.text = "";
+    }
+
+    /// <summary>
+    /// 使用物品，提供给按钮使用
+    /// </summary>
+    public void UseItems()
+    {
+
+        if (itemsList.Count-1>=currentSlot)
+        {
+            //检测当前的物品的类型
+            switch (itemsList[currentSlot].itemType)
+            {
+                //根据背包中选中的物品的类型去背包预制体列表中查询出相应的预制体，目的是为了拿到其脚本
+                case ItemType.HealthPotion:
+
+                    //执行使用回复药水的方法
+                    itemPrefabs[0].GetComponent<HealthPotion>().UseItem();
+
+                    break;
+                case ItemType.ExpPotion:
+
+                    //执行使用回复药水的方法
+                    itemPrefabs[1].GetComponent<ExpPotion>().UseItem();
+
+                    break;
+            }
+
+            //用完，将其SO移除背包
+            if (itemsList[currentSlot].count == 0)
+            {
+                //清除信息框信息
+                descriptionText.text = "";
+
+                itemsList.Remove(itemsList[currentSlot]);
+            }
+        }
+       
+    }
+
 }

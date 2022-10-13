@@ -4,15 +4,15 @@ using UnityEngine;
 
 
 /// <summary>
-/// 回血药水类
+/// 经验药水类
 /// </summary>
-public class HealthPotion : Item
+public class ExpPotion : Item
 {
     public override void UseItem()
     {
         base.UseItem();
 
-        //加30血
-        GameManager.Instance.playerStats.CurrentHealth += 30;
+        //加10经验
+        GameManager.Instance.playerStats.CurrentExp += 10;
     }
 }
