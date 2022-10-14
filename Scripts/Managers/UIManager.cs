@@ -65,16 +65,6 @@ public class UIManager : SingleTon<UIManager>
     /// </summary>
     private void InventoryController()
     {
-        if (Input.GetKeyDown(KeyCode.Escape))
-        {
-            //如果游戏暂停中，按下退出键，游戏继续
-            if (GameManager.Instance.isPaused)
-            {
-                Resume();
-            }
-            
-        }
-
         if (Input.GetKeyDown(KeyCode.I))
         {
             //如果游戏正在运行，按下I，游戏停止，弹出背包
@@ -121,7 +111,7 @@ public class UIManager : SingleTon<UIManager>
     /// <summary>
     /// 游戏继续类，实现继续后游戏的一些操作
     /// </summary>
-    private void Resume()
+    public void Resume()
     {
         //游戏继续，关闭背包界面
         inventoryMenu.gameObject.SetActive(false);
@@ -303,6 +293,23 @@ public class UIManager : SingleTon<UIManager>
             }
         }
        
+    }
+
+    /// <summary>
+    /// 丢弃物品
+    /// </summary>
+    public void RemoveItems()
+    {
+        //如果当前点击的Slot是有物品的
+        if(itemsList.Count - 1 >= currentSlot)
+        {
+            //数量减一
+            itemsList[currentSlot].count--;
+
+            //到0移除
+            if (itemsList[currentSlot].count == 0)
+                itemsList.Remove(itemsList[currentSlot]);
+        }
     }
 
 }

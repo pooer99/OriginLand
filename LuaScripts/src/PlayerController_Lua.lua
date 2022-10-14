@@ -176,50 +176,53 @@ PlayerController.UpDate = function()
         -- 广播给所有敌人
         self:EndNotify()
     else
-
-        --- Player攻击
-        if(Input.GetKeyDown(CU.KeyCode.Mouse0))
+        -- 游戏未停止
+        if(CS.GameManager.Instance.isPaused == false)
         then
-            PlayerAttack()
-        end
-
-        -- 攻击计时
-        if(canAttack == false)then
-            attacktimer = attacktimer - CU.Time.deltaTime
-        end
-
-        -- 攻击计时结束，允许攻击
-        if(attacktimer <= 0)then
-            canAttack = true
-
-            -- 重置计时器
-            attacktimer =waitAttackTime
-        end
-
-        --- Player移动
-        if(canMove)then
-            PlayerMove()
-        end
-
-        --- Player跳跃
-        if (Input.GetKeyDown(CU.KeyCode.Space) and canJump == true)
-        then
-            PlayerJump()
-
-            canJump = false
-            animator:SetBool("CanJump",canJump);
-        end
-
-        -- 显示武器
-        if(Input.GetKeyDown(CU.KeyCode.Tab))
-        then
-            if(isShow == false)
+            --- Player攻击
+            if(Input.GetKeyDown(CU.KeyCode.Mouse0))
             then
-                self.weapon.transform:GetChild(0).gameObject:SetActive(true)
-                isShow = true
-            else
-                self.weapon.transform:GetChild(0).gameObject:SetActive(false)
-                isShow = false
+                PlayerAttack()
+            end
+
+            -- 攻击计时
+            if(canAttack == false)then
+                attacktimer = attacktimer - CU.Time.deltaTime
+            end
+
+            -- 攻击计时结束，允许攻击
+            if(attacktimer <= 0)then
+                canAttack = true
+
+                -- 重置计时器
+                attacktimer =waitAttackTime
+            end
+
+            --- Player移动
+            if(canMove)then
+                PlayerMove()
+            end
+
+            --- Player跳跃
+            if (Input.GetKeyDown(CU.KeyCode.Space) and canJump == true)
+            then
+                PlayerJump()
+
+                canJump = false
+                animator:SetBool("CanJump",canJump);
+            end
+
+            -- 显示武器
+            if(Input.GetKeyDown(CU.KeyCode.Tab))
+            then
+                if(isShow == false)
+                then
+                    self.weapon.transform:GetChild(0).gameObject:SetActive(true)
+                    isShow = true
+                else
+                    self.weapon.transform:GetChild(0).gameObject:SetActive(false)
+                    isShow = false
+                end
             end
         end
 
